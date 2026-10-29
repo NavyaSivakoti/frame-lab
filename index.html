@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Visualforce Frame Lab</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light dark;
+  --bg:#f3f3f3; --surface:#ffffff; --line:#d8d6d3; --text:#181818; --muted:#565656;
+  --brand:#0b5cab; --brand-ink:#ffffff; --link:#0b5cab; --ok:#2e7d32; --warn:#8a5a00; --err:#ba0517;
+  --head:#0b3d73; --head-ink:#ffffff; --row:#f8f8f7;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171c; --surface:#1f2229; --line:#3b404b; --text:#e8eaee; --muted:#a3a9b5;
+    --brand:#2b6fd6; --brand-ink:#ffffff; --link:#6db0ff; --ok:#7bd88a; --warn:#f0c36b; --err:#ff7b86;
+    --head:#0c2748; --head-ink:#ffffff; --row:#242831;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171c; --surface:#1f2229; --line:#3b404b; --text:#e8eaee; --muted:#a3a9b5;
+  --brand:#2b6fd6; --brand-ink:#ffffff; --link:#6db0ff; --ok:#7bd88a; --warn:#f0c36b; --err:#ff7b86;
+  --head:#0c2748; --head-ink:#ffffff; --row:#242831;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;min-height:100%}
+a{color:var(--link)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+header.top{background:var(--head);color:var(--head-ink)}
+.top-in{max-width:1080px;margin:0 auto;padding:10px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 24px}
+.brand{font-weight:700;font-size:17px;letter-spacing:.2px}
+.brand small{font-weight:400;opacity:.8;margin-left:8px;font-size:13px}
+nav.tabs{display:flex;gap:2px;flex-wrap:wrap}
+nav.tabs a{color:var(--head-ink);text-decoration:none;padding:7px 14px;border-radius:4px 4px 0 0;opacity:.85}
+nav.tabs a[aria-current="page"]{background:var(--bg);color:var(--text);opacity:1;font-weight:600}
+nav.tabs a:hover{opacity:1;text-decoration:underline}
+main{max-width:1080px;margin:0 auto;padding:22px 20px 48px}
+h1{font-size:24px;line-height:1.25;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 20px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.btn{font:inherit;padding:7px 16px;border-radius:4px;border:1px solid var(--line);background:var(--surface);color:var(--link);cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn:hover{filter:brightness(.95)}
+input[type=search],input[type=text]{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--text);min-width:240px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;color:var(--muted);background:var(--row);font-size:13px}
+tr:last-child td{border-bottom:0}
+td.wrap{white-space:normal}
+.empty{padding:18px 14px;color:var(--muted);margin:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;margin-bottom:16px;overflow:hidden}
+.panel-head{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;background:var(--row)}
+.panel iframe{display:block;width:100%;border:0;background:var(--surface)}
+.cap{margin:0;padding:8px 14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cap code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:var(--text);background:var(--row);border:1px solid var(--line);padding:1px 6px;border-radius:3px}
+.state{font-weight:600}
+.state.vis{color:var(--ok)}
+.state.hid{color:var(--warn)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.tabbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tabbar button{font:inherit;padding:7px 16px;border-radius:4px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+.tabbar button[aria-selected="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+dl.detail{display:grid;grid-template-columns:minmax(120px,200px) 1fr;gap:0;margin:0}
+dl.detail dt,dl.detail dd{margin:0;padding:10px 14px;border-bottom:1px solid var(--line)}
+dl.detail dt{color:var(--muted);background:var(--row);font-size:13px;font-weight:600}
+.notice{border-left:4px solid var(--link);padding:10px 14px;background:var(--row);margin:0 0 18px;max-width:80ch}
+@media (max-width:560px){dl.detail{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">Frame Lab<small>Salesforce-style frame test site</small></div>
+    <nav class="tabs" aria-label="Main">
+      <a href="#home" data-tab="home">Home</a>
+      <a href="#accounts" data-tab="accounts">Accounts</a>
+      <a href="#contacts" data-tab="contacts">Contacts</a>
+    </nav>
+  </div>
+</header>
+<main id="view"></main>
+
+<script>
+(function(){
+  var seq = 0;
+  var panels = [];
+  var refreshCount = 0;
+  var store = {
+    accounts: [
+      {name:'Acme Corp', site:'Chicago', type:'Customer', phone:'555-0101', website:'acme.example', industry:'Technology', description:'', parent:''},
+      {name:'Globex', site:'Austin', type:'Partner', phone:'555-0102', website:'globex.example', industry:'Banking', description:'', parent:''},
+      {name:'Initech', site:'Phoenix', type:'Prospect', phone:'555-0103', website:'initech.example', industry:'Technology', description:'', parent:''},
+      {name:'Northwind Traders', site:'Denver', type:'Customer', phone:'555-0104', website:'northwind.example', industry:'Retail', description:'', parent:''}
+    ],
+    contacts: [
+      {first:'Ada', last:'Lovelace', email:'ada@example.com', phone:'555-0201', account:'Acme Corp'},
+      {first:'Grace', last:'Hopper', email:'grace@example.com', phone:'555-0202', account:'Globex'}
+    ],
+    last: null
+  };
+  try{
+    var saved = sessionStorage.getItem('frame-lab');
+    if(saved){ var p = JSON.parse(saved); if(p && p.accounts && p.contacts){ store = p; } }
+  }catch(e){}
+  function persist(){ try{ sessionStorage.setItem('frame-lab', JSON.stringify(store)); }catch(e){} }
+
+  var view = document.getElementById('view');
+
+  function el(tag, props){
+    var e = document.createElement(tag);
+    props = props || {};
+    Object.keys(props).forEach(function(k){
+      var v = props[k];
+      if(k === 'class'){ e.className = v; }
+      else if(k === 'text'){ e.textContent = v; }
+      else if(k.indexOf('on') === 0){ e.addEventListener(k.slice(2), v); }
+      else { e.setAttribute(k, v); }
+    });
+    for(var i = 2; i < arguments.length; i++){
+      var kids = [].concat(arguments[i]);
+      for(var j = 0; j < kids.length; j++){
+        var c = kids[j];
+        if(c === null || c === undefined) continue;
+        e.append(c.nodeType ? c : document.createTextNode(c));
+      }
+    }
+    return e;
+  }
+
+  /* ---------- frame documents (the "Visualforce" content) ---------- */
+  var FRAME_CSS =
+    ':root{color-scheme:light dark;--bg:#fff;--text:#181818;--muted:#565656;--line:#c9c7c5;--brand:#0b5cab;--link:#0b5cab;--err:#ba0517;--ok:#2e7d32;--row:#f8f8f7}' +
+    '@media (prefers-color-scheme:dark){:root{--bg:#1f2229;--text:#e8eaee;--muted:#a3a9b5;--line:#4a505c;--brand:#2b6fd6;--link:#6db0ff;--err:#ff7b86;--ok:#7bd88a;--row:#242831}}' +
+    '*{box-sizing:border-box}body{margin:0;padding:16px;background:var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}' +
+    'h3{margin:0 0 12px;font-size:15px}' +
+    '.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 20px}' +
+    '.fld label{display:block;font-weight:600;font-size:13px;margin-bottom:3px}' +
+    '.req{color:var(--err)}' +
+    'input,select,textarea{width:100%;font:inherit;padding:7px 8px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--text)}' +
+    'input.bad{border-color:var(--err)}' +
+    '.full{grid-column:1/-1}' +
+    '.lk{display:flex;gap:6px}.lk input{flex:1}' +
+    '.icon{font:inherit;padding:0 10px;border:1px solid var(--line);border-radius:4px;background:var(--row);color:var(--text);cursor:pointer}' +
+    '.btn{font:inherit;padding:7px 16px;border-radius:4px;border:1px solid var(--line);background:var(--bg);color:var(--link);cursor:pointer}' +
+    '.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}' +
+    '.actions{display:flex;gap:10px;margin-top:16px;justify-content:center}' +
+    '.ferr{color:var(--err);font-size:13px;margin-top:3px}' +
+    '.errbox{border:1px solid var(--err);color:var(--err);padding:8px 10px;border-radius:4px;margin-bottom:12px}' +
+    '.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}' +
+    '.modal[hidden]{display:none}' +
+    '.dlg{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:260px;max-width:100%}' +
+    '.dlg h4{margin:0 0 10px}.dlg ul{list-style:none;margin:0 0 12px;padding:0}' +
+    '.dlg li button{width:100%;text-align:left;font:inherit;padding:8px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--link);cursor:pointer}' +
+    '#status{margin:12px 0 0;font-weight:600;color:var(--ok)}';
+
+  function fieldHtml(s){
+    var id = 'f_' + s.key, ctl;
+    var common = ' id="' + id + '" name="' + s.name + '" data-key="' + s.key + '"' + (s.req ? ' data-req="1"' : '');
+    if(s.type === 'select'){
+      ctl = '<select' + common + '>' + s.options.map(function(o){ return '<option>' + o + '</option>'; }).join('') + '</select>';
+    } else if(s.type === 'textarea'){
+      ctl = '<textarea' + common + ' rows="3"></textarea>';
+    } else if(s.type === 'lookup'){
+      ctl = '<div class="lk"><input type="text" readonly' + common + '><button type="button" class="icon" id="lookup" aria-label="' + s.label + ' Lookup">&#128269;</button></div>';
+    } else {
+      ctl = '<input type="text"' + common + '>';
+    }
+    var cls = 'fld' + ((s.type === 'textarea' || s.type === 'lookup') ? ' full' : '');
+    return '<div class="' + cls + '"><label for="' + id + '">' + s.label + (s.req ? ' <span class="req">*</span>' : '') + '</label>' + ctl +
+      (s.req ? '<div class="ferr" id="ferr" hidden></div>' : '') + '</div>';
+  }
+
+  var FORM_SCRIPT =
+    'var NAMES = __NAMES__; var KIND = "__KIND__";' +
+    'function post(m){ m.fl = 1; m.kind = KIND; parent.postMessage(m, "*"); }' +
+    'document.getElementById("save").addEventListener("click", function(){' +
+    '  var req = document.querySelector("[data-req=\\"1\\"]");' +
+    '  var pe = document.getElementById("pageErr"), fe = document.getElementById("ferr");' +
+    '  if(req && !req.value.trim()){' +
+    '    pe.hidden = false; pe.textContent = "Error: Invalid Data. Review all error messages below to correct your data.";' +
+    '    fe.hidden = false; fe.textContent = "Error: You must enter a value"; req.classList.add("bad"); req.focus(); return;' +
+    '  }' +
+    '  pe.hidden = true; fe.hidden = true; req.classList.remove("bad");' +
+    '  var data = {}; document.querySelectorAll("[data-key]").forEach(function(e){ data[e.dataset.key] = e.value; });' +
+    '  post({type:"save", data:data});' +
+    '});' +
+    'document.getElementById("cancel").addEventListener("click", function(){ post({type:"cancel"}); });' +
+    'var lk = document.getElementById("lookup");' +
+    'if(lk){' +
+    '  var modal = document.getElementById("modal"), list = document.getElementById("recs");' +
+    '  NAMES.forEach(function(n){ var li = document.createElement("li"); var b = document.createElement("button"); b.type = "button"; b.textContent = n;' +
+    '    b.addEventListener("click", function(){ document.querySelector("[data-lookup=\\"1\\"]").value = n; modal.hidden = true; });' +
+    '    li.appendChild(b); list.appendChild(li); });' +
+    '  lk.addEventListener("click", function(){ modal.hidden = false; });' +
+    '  document.getElementById("mclose").addEventListener("click", function(){ modal.hidden = true; });' +
+    '}';
+
+  function formDoc(kind, title, specs){
+    var names = JSON.stringify(store.accounts.map(function(a){ return a.name; })).replace(/</g, '\\u003c');
+    var body = specs.map(fieldHtml).join('').replace('readonly id=', 'readonly data-lookup="1" id=');
+    return '<!doctype html><html><head><meta charset="utf-8"><style>' + FRAME_CSS + '</style></head><body>' +
+      '<h3>' + title + '</h3>' +
+      '<div class="errbox" id="pageErr" role="alert" hidden></div>' +
+      '<div class="grid">' + body + '</div>' +
+      '<div class="actions"><button type="button" class="btn primary" id="save">Save</button>' +
+      '<button type="button" class="btn" id="cancel">Cancel</button></div>' +
+      '<div class="modal" id="modal" hidden><div class="dlg" role="dialog" aria-label="Lookup"><h4>Select a record</h4><ul id="recs"></ul>' +
+      '<button type="button" class="btn" id="mclose">Close</button></div></div>' +
+      '<script>' + FORM_SCRIPT.replace('__NAMES__', names).replace('__KIND__', kind) + '<\/script></body></html>';
+  }
+
+  function miniDoc(title, fieldLabel, fieldName, buttonLabel, statusText){
+    return '<!doctype html><html><head><meta charset="utf-8"><style>' + FRAME_CSS + '</style></head><body>' +
+      '<h3>' + title + '</h3>' +
+      '<div class="fld"><label for="v">' + fieldLabel + '</label><input type="text" id="v" name="' + fieldName + '"></div>' +
+      '<div class="actions" style="justify-content:flex-start"><button type="button" class="btn primary" id="go">' + buttonLabel + '</button></div>' +
+      '<p id="status" role="status"></p>' +
+      '<script>document.getElementById("go").addEventListener("click",function(){document.getElementById("status").textContent="' + statusText + '";});<\/script>' +
+      '</body></html>';
+  }
+
+  function refreshDoc(){
+    refreshCount++;
+    return '<!doctype html><html><head><meta charset="utf-8"><style>' + FRAME_CSS + '</style></head><body>' +
+      '<h3>Section editor</h3>' +
+      '<div class="fld"><label for="v">Note</label><input type="text" id="v" name="j_id0:j_id11:noteBlock:j_id14"></div>' +
+      '<div class="actions" style="justify-content:flex-start"><button type="button" class="btn primary" id="go">Save and refresh</button></div>' +
+      '<p id="status" role="status">Loaded ' + refreshCount + ' time(s)</p>' +
+      '<script>document.getElementById("go").addEventListener("click",function(){parent.postMessage({fl:1,type:"refresh"},"*");});<\/script></body></html>';
+  }
+
+  function nestedDoc(){
+    var inner = JSON.stringify(miniDoc('Inner frame', 'Inner field', 'j_id0:j_id13:innerBlock:j_id16', 'Save inner', 'Inner saved')).replace(/</g, '\\u003c');
+    return '<!doctype html><html><head><meta charset="utf-8"><style>' + FRAME_CSS + '</style></head><body>' +
+      '<h3>Outer frame</h3>' +
+      '<div class="fld"><label for="o">Outer field</label><input type="text" id="o" name="j_id0:j_id13:outerBlock:j_id14"></div>' +
+      '<div id="slot" style="margin-top:12px"></div>' +
+      '<script>var f=document.createElement("iframe");f.name="vfFrameId_"+(Date.now()+1);f.title="Inner frame";f.style.cssText="width:100%;height:210px;border:1px solid #c9c7c5";f.srcdoc=' + inner + ';document.getElementById("slot").appendChild(f);<\/script></body></html>';
+  }
+
+  var ACCOUNT_PREFIX = 'form:accountBlock:infoSection:';
+  var accountSpecs = [
+    {key:'name', label:'Account Name', name:ACCOUNT_PREFIX + 'j_id36', type:'text', req:true},
+    {key:'site', label:'Account Site', name:ACCOUNT_PREFIX + 'j_id38', type:'text'},
+    {key:'type', label:'Type', name:ACCOUNT_PREFIX + 'j_id40', type:'select', options:['--None--','Customer','Partner','Prospect','Reseller']},
+    {key:'phone', label:'Phone', name:ACCOUNT_PREFIX + 'j_id42', type:'text'},
+    {key:'website', label:'Website', name:ACCOUNT_PREFIX + 'j_id44', type:'text'},
+    {key:'industry', label:'Industry', name:ACCOUNT_PREFIX + 'j_id46', type:'select', options:['--None--','Banking','Healthcare','Retail','Technology']},
+    {key:'description', label:'Description', name:ACCOUNT_PREFIX + 'j_id48', type:'textarea'},
+    {key:'parent', label:'Parent Account', name:ACCOUNT_PREFIX + 'j_id50', type:'lookup'}
+  ];
+  var CONTACT_PREFIX = 'j_id0:j_id3:contactBlock:ContactInformationSection:';
+  var contactSpecs = [
+    {key:'first', label:'First Name', name:CONTACT_PREFIX + 'j_id36', type:'text'},
+    {key:'last', label:'Last Name', name:CONTACT_PREFIX + 'j_id38', type:'text', req:true},
+    {key:'email', label:'Email', name:CONTACT_PREFIX + 'j_id40', type:'text'},
+    {key:'phone', label:'Phone', name:CONTACT_PREFIX + 'j_id42', type:'text'},
+    {key:'account', label:'Account Name', name:CONTACT_PREFIX + 'j_id44', type:'lookup'}
+  ];
+
+  /* ---------- frame panel: creates an iframe with a fresh timestamped name ---------- */
+  function framePanel(prefix, docFn, opts){
+    opts = opts || {};
+    var height = opts.height || 360;
+    var label = opts.label || 'Visualforce frame';
+    var fixedName = opts.fixedName || null;
+    var box = el('section', {class:'panel'});
+    var stateEl = el('span', {class:'state vis', text:'visible'});
+    var head = el('div', {class:'panel-head'}, el('strong', {text:label}), stateEl);
+    var body = el('div');
+    var code = el('code', {class:'fname'});
+    var cap = el('p', {class:'cap'}, 'Frame name:', code);
+    var frame = null, visible = opts.hidden ? false : true;
+
+    function mount(){
+      if(frame){ frame.remove(); }
+      var name = fixedName || (prefix + (Date.now() + (seq++)));
+      frame = el('iframe', {name:name, title:label});
+      frame.srcdoc = docFn();
+      frame.style.height = height + 'px';
+      frame.style.display = visible ? '' : 'none';
+      code.textContent = name;
+      body.append(frame);
+    }
+    function setVisible(v){
+      visible = v;
+      if(frame){ frame.style.display = v ? '' : 'none'; }
+      stateEl.textContent = v ? 'visible' : 'hidden';
+      stateEl.className = 'state ' + (v ? 'vis' : 'hid');
+    }
+    if(opts.reloadable){
+      cap.append(el('button', {class:'btn', type:'button', id:'reload-frame', onclick:mount}, 'Reload form frame'));
+    }
+    box.append(head, body, cap);
+    var self = {box:box, setVisible:setVisible, reload:mount, win:function(){ return frame ? frame.contentWindow : null; }};
+    panels.push(self);
+    if(opts.delay){
+      body.append(el('p', {class:'empty', role:'status', text:'Loading page...'}));
+      code.textContent = 'pending';
+      setTimeout(function(){ body.replaceChildren(); mount(); setVisible(visible); }, opts.delay);
+    } else {
+      mount();
+      setVisible(visible);
+    }
+    return self;
+  }
+
+  window.addEventListener('message', function(e){
+    var d = e.data;
+    if(!d || d.fl !== 1) return;
+    if(d.type === 'refresh'){ panels.forEach(function(p){ if(p.win() === e.source){ p.reload(); } }); return; }
+    if(d.type === 'cancel'){ location.hash = d.kind === 'contact' ? '#contacts' : '#accounts'; return; }
+    if(d.type === 'save'){
+      if(d.kind === 'contact'){
+        store.contacts.unshift(d.data);
+        store.last = {kind:'contact', key:d.data.last};
+        persist(); location.hash = '#contact-detail';
+      } else {
+        store.accounts.unshift(d.data);
+        store.last = {kind:'account', key:d.data.name};
+        persist(); location.hash = '#account-detail';
+      }
+    }
+  });
+
+  /* ---------- pages ---------- */
+  function head(title, sub){
+    return [el('h1', {text:title}), sub ? el('p', {class:'sub', text:sub}) : null];
+  }
+
+  var routes = {};
+
+  routes.home = function(){
+    var rows = [
+      ['#account-new', 'New account', 'One visible frame named vfFrameId_ plus a timestamp. The form has the Account fields, the Parent Account lookup and Save and Cancel.', 'Matched by the vfFrameId_ prefix. No AI heal after the first run.'],
+      ['#contact-new', 'New contact', 'Same kind of frame on a second object.', 'Same stable behaviour as Account.'],
+      ['#two-frames', 'Two visible frames', 'Two vfFrameId_ frames on screen at once, each with its own button.', 'The engine does not guess. It falls back to the normal AI heal.'],
+      ['#hidden-frame', 'One visible, one hidden', 'A visible vfFrameId_ frame and a hidden one. Tabs swap which is visible.', 'Only the visible frame is matched.'],
+      ['#similar-names', 'Similar frame names', 'Frames named vfFrame_ and xvfFrameId_ plus a timestamp.', 'Neither name starts with vfFrameId_, so the new rule must not match them.'],
+      ['#stable-iframe', 'Stable iframe', 'A normal iframe with the fixed name stable-frame.', 'Same behaviour as before the fix.'],
+      ['#slow-frame', 'Slow frame', 'The frame appears about six seconds after the page opens.', 'The step waits for the frame and does not fail early.'],
+      ['#frame-refresh', 'Frame refresh', 'Save and refresh swaps in a new frame with a new name, with no page reload.', 'The next step still finds the new frame without a heal.'],
+      ['#dynamic-frames', 'Frames added on click', 'Each press of Add frame adds another vfFrameId_ frame, up to three.', 'One frame matches. Two or more fall back to the normal heal.'],
+      ['#accordion-frames', 'Section tabs', 'Three sections, each in its own vfFrameId_ frame. Only the open section is visible.', 'Matches the visible section frame as the tabs change.'],
+      ['#delayed-second-frame', 'Second frame appears later', 'One visible frame at first, a second one about five seconds later.', 'Matches at first. Becomes ambiguous once the second appears.'],
+      ['#hidden-only', 'Only a hidden frame', 'The only vfFrameId_ frame is hidden until Show section is pressed.', 'No visible match before the button, so the normal behaviour applies. Matches after.'],
+      ['#nested-frames', 'Nested frames', 'An outer vfFrameId_ frame that holds an inner vfFrameId_ frame.', 'Observe and record. The fix does not describe this case.']
+    ];
+    var tbody = el('tbody');
+    rows.forEach(function(r){
+      tbody.append(el('tr', {},
+        el('td', {class:'wrap'}, el('a', {href:r[0], text:r[1]})),
+        el('td', {class:'wrap', text:r[2]}),
+        el('td', {class:'wrap', text:r[3]})));
+    });
+    view.append(
+      head('Visualforce frame lab', 'A stand-in for Salesforce Visualforce pages. Each form loads inside an iframe whose name changes on every page load, the same way vfFrameId_ names do in Salesforce.'),
+      el('p', {class:'notice', text:'Every frame shows its current name under the form, so you can confirm it changes between loads.'}),
+      el('div', {class:'card scroll'}, el('table', {},
+        el('thead', {}, el('tr', {}, el('th', {text:'Page'}), el('th', {text:'What it contains'}), el('th', {text:'What the engine should do'}))),
+        tbody))
+    );
+  };
+
+  routes.accounts = function(){
+    var search = el('input', {type:'search', id:'search', placeholder:'Search accounts', 'aria-label':'Search accounts'});
+    var tbody = el('tbody');
+    var empty = el('p', {class:'empty', text:'No accounts match your search. Clear the search or create a new account.'});
+    function draw(){
+      var q = search.value.trim().toLowerCase();
+      tbody.replaceChildren();
+      var rows = store.accounts.filter(function(a){ return a.name.toLowerCase().indexOf(q) !== -1; });
+      rows.forEach(function(a){
+        tbody.append(el('tr', {},
+          el('td', {}, el('a', {href:'#account-detail', onclick:function(){ store.last = {kind:'account', key:a.name}; persist(); }, text:a.name})),
+          el('td', {text:a.site || ''}), el('td', {text:a.type && a.type !== '--None--' ? a.type : ''}), el('td', {text:a.phone || ''})));
+      });
+      empty.hidden = rows.length > 0;
+    }
+    search.addEventListener('input', draw);
+    view.append(
+      head('Accounts', 'Create an account from the New button. The form opens in a Visualforce frame.'),
+      el('div', {class:'bar'}, search, el('a', {class:'btn primary', href:'#account-new', id:'new-account', text:'New'})),
+      el('div', {class:'card scroll'}, el('table', {},
+        el('thead', {}, el('tr', {}, el('th', {text:'Account Name'}), el('th', {text:'Account Site'}), el('th', {text:'Type'}), el('th', {text:'Phone'}))),
+        tbody), empty)
+    );
+    draw();
+  };
+
+  routes['account-new'] = function(){
+    var p = framePanel('vfFrameId_', function(){ return formDoc('account', 'Account Information', accountSpecs); },
+      {label:'Account New Page Layout', height:560, reloadable:true});
+    view.append(head('New account', 'This page is a Visualforce page. The form below sits in an iframe.'), p.box);
+  };
+
+  routes['account-detail'] = function(){
+    var key = store.last && store.last.kind === 'account' ? store.last.key : null;
+    var a = store.accounts.filter(function(x){ return x.name === key; })[0] || store.accounts[0];
+    var dl = el('dl', {class:'detail'});
+    [['Account Name', a.name], ['Account Site', a.site], ['Type', a.type !== '--None--' ? a.type : ''], ['Phone', a.phone],
+     ['Website', a.website], ['Industry', a.industry !== '--None--' ? a.industry : ''], ['Description', a.description], ['Parent Account', a.parent]
+    ].forEach(function(r){ dl.append(el('dt', {text:r[0]}), el('dd', {text:r[1] || ''})); });
+    view.append(
+      el('h1', {id:'record-title', text:a.name}),
+      el('p', {class:'sub', text:'Account detail'}),
+      el('div', {class:'card'}, dl),
+      el('p', {}, el('a', {href:'#accounts', text:'Back to accounts'}))
+    );
+  };
+
+  routes.contacts = function(){
+    var tbody = el('tbody');
+    store.contacts.forEach(function(c){
+      tbody.append(el('tr', {},
+        el('td', {}, el('a', {href:'#contact-detail', onclick:function(){ store.last = {kind:'contact', key:c.last}; persist(); }, text:((c.first || '') + ' ' + c.last).trim()})),
+        el('td', {text:c.email || ''}), el('td', {text:c.phone || ''}), el('td', {text:c.account || ''})));
+    });
+    view.append(
+      head('Contacts', 'Create a contact from the New button.'),
+      el('div', {class:'bar'}, el('span'), el('a', {class:'btn primary', href:'#contact-new', id:'new-contact', text:'New'})),
+      el('div', {class:'card scroll'}, el('table', {},
+        el('thead', {}, el('tr', {}, el('th', {text:'Name'}), el('th', {text:'Email'}), el('th', {text:'Phone'}), el('th', {text:'Account Name'}))),
+        tbody))
+    );
+  };
+
+  routes['contact-new'] = function(){
+    var p = framePanel('vfFrameId_', function(){ return formDoc('contact', 'Contact Information', contactSpecs); },
+      {label:'Contact New Page Layout', height:440, reloadable:true});
+    view.append(head('New contact', 'A second object with the same kind of Visualforce frame.'), p.box);
+  };
+
+  routes['contact-detail'] = function(){
+    var key = store.last && store.last.kind === 'contact' ? store.last.key : null;
+    var c = store.contacts.filter(function(x){ return x.last === key; })[0] || store.contacts[0];
+    var dl = el('dl', {class:'detail'});
+    [['First Name', c.first], ['Last Name', c.last], ['Email', c.email], ['Phone', c.phone], ['Account Name', c.account]]
+      .forEach(function(r){ dl.append(el('dt', {text:r[0]}), el('dd', {text:r[1] || ''})); });
+    view.append(
+      el('h1', {id:'record-title', text:((c.first || '') + ' ' + c.last).trim()}),
+      el('p', {class:'sub', text:'Contact detail'}),
+      el('div', {class:'card'}, dl),
+      el('p', {}, el('a', {href:'#contacts', text:'Back to contacts'}))
+    );
+  };
+
+  routes['two-frames'] = function(){
+    var a = framePanel('vfFrameId_', function(){ return miniDoc('Billing section', 'Billing city', 'j_id0:j_id5:billingBlock:j_id10', 'Save billing', 'Billing saved'); }, {label:'Billing section', height:230});
+    var b = framePanel('vfFrameId_', function(){ return miniDoc('Shipping section', 'Shipping city', 'j_id0:j_id5:shippingBlock:j_id10', 'Save shipping', 'Shipping saved'); }, {label:'Shipping section', height:230});
+    view.append(head('Two visible frames', 'Both frames are visible and both names start with vfFrameId_. A step that only says "a visible vfFrameId_ frame" is ambiguous here.'), el('div', {class:'two'}, a.box, b.box));
+  };
+
+  routes['hidden-frame'] = function(){
+    var d = framePanel('vfFrameId_', function(){ return miniDoc('Details', 'Owner', 'j_id0:j_id7:detailsBlock:j_id12', 'Save details', 'Details saved'); }, {label:'Details tab frame', height:230});
+    var h = framePanel('vfFrameId_', function(){ return miniDoc('History', 'Filter', 'j_id0:j_id7:historyBlock:j_id12', 'Load history', 'History loaded'); }, {label:'History tab frame', height:230, hidden:true});
+    var bd = el('button', {type:'button', id:'tab-details', role:'tab', 'aria-selected':'true'}, 'Details');
+    var bh = el('button', {type:'button', id:'tab-history', role:'tab', 'aria-selected':'false'}, 'History');
+    bd.addEventListener('click', function(){ d.setVisible(true); h.setVisible(false); bd.setAttribute('aria-selected', 'true'); bh.setAttribute('aria-selected', 'false'); });
+    bh.addEventListener('click', function(){ d.setVisible(false); h.setVisible(true); bd.setAttribute('aria-selected', 'false'); bh.setAttribute('aria-selected', 'true'); });
+    view.append(head('One visible, one hidden', 'Both frames start with vfFrameId_. Only the Details frame is visible until you open the History tab.'),
+      el('div', {class:'tabbar', role:'tablist'}, bd, bh), d.box, h.box);
+  };
+
+  routes['similar-names'] = function(){
+    var a = framePanel('vfFrame_', function(){ return miniDoc('Frame A', 'Reference A', 'j_id0:j_id9:blockA:j_id10', 'Run action A', 'Action A done'); }, {label:'Frame with name vfFrame_', height:230});
+    var b = framePanel('xvfFrameId_', function(){ return miniDoc('Frame B', 'Reference B', 'j_id0:j_id9:blockB:j_id10', 'Run action B', 'Action B done'); }, {label:'Frame with name xvfFrameId_', height:230});
+    view.append(head('Similar frame names', 'These names look close to vfFrameId_ but do not start with it.'), el('div', {class:'two'}, a.box, b.box));
+  };
+
+  routes['stable-iframe'] = function(){
+    var s = framePanel('', function(){ return miniDoc('Stable frame', 'Search term', 'term', 'Run search', 'Search complete'); }, {label:'Frame with a fixed name', height:230, fixedName:'stable-frame'});
+    view.append(head('Stable iframe', 'This frame keeps the same name on every load.'), s.box);
+  };
+
+  routes['slow-frame'] = function(){
+    var p = framePanel('vfFrameId_', function(){ return miniDoc('Slow section', 'Comment', 'j_id0:j_id15:slowBlock:j_id10', 'Save comment', 'Comment saved'); }, {label:'Slow loading frame', height:230, delay:6000});
+    view.append(head('Slow frame', 'The frame appears about six seconds after the page opens. A step has to wait for it instead of failing early.'), p.box);
+  };
+
+  routes['frame-refresh'] = function(){
+    refreshCount = 0;
+    var p = framePanel('vfFrameId_', refreshDoc, {label:'Section editor', height:240});
+    view.append(head('Frame refresh', 'Save and refresh replaces the frame with a new one that has a new name. The page does not reload.'), p.box);
+  };
+
+  routes['dynamic-frames'] = function(){
+    var slot = el('div');
+    var n = 0;
+    var add = el('button', {class:'btn primary', type:'button', id:'add-frame'}, 'Add frame');
+    add.addEventListener('click', function(){
+      n++;
+      var k = n;
+      slot.append(framePanel('vfFrameId_', function(){ return miniDoc('Added section ' + k, 'Note ' + k, 'j_id0:j_id19:added' + k + 'Block:j_id10', 'Save section ' + k, 'Section ' + k + ' saved'); }, {label:'Added frame ' + k, height:230}).box);
+      if(n >= 3){ add.disabled = true; }
+    });
+    view.append(head('Frames added on click', 'Press Add frame to add a vfFrameId_ frame. Up to three can be added.'), el('div', {class:'bar'}, add), slot);
+  };
+
+  routes['accordion-frames'] = function(){
+    var items = [{t:'Account details', k:'a'}, {t:'Billing', k:'b'}, {t:'Shipping', k:'c'}];
+    var ps = [], btns = [];
+    items.forEach(function(it, i){
+      var p = framePanel('vfFrameId_', function(){ return miniDoc(it.t, it.t + ' note', 'j_id0:j_id17:' + it.k + 'Block:j_id10', 'Save ' + it.t.toLowerCase(), it.t + ' saved'); }, {label:it.t + ' section', height:210, hidden:i !== 0});
+      ps.push(p);
+      var b = el('button', {type:'button', id:'section-' + it.k, role:'tab', 'aria-selected':i === 0 ? 'true' : 'false'}, it.t);
+      b.addEventListener('click', function(){
+        ps.forEach(function(q, j){ q.setVisible(j === i); btns[j].setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+      });
+      btns.push(b);
+    });
+    view.append(head('Section tabs', 'Each section has its own vfFrameId_ frame. Only the open section is visible.'), el('div', {class:'tabbar', role:'tablist'}, btns), ps.map(function(p){ return p.box; }));
+  };
+
+  routes['delayed-second-frame'] = function(){
+    var a = framePanel('vfFrameId_', function(){ return miniDoc('First section', 'First note', 'j_id0:j_id21:firstBlock:j_id10', 'Save first', 'First saved'); }, {label:'First section', height:210});
+    var b = framePanel('vfFrameId_', function(){ return miniDoc('Second section', 'Second note', 'j_id0:j_id21:secondBlock:j_id10', 'Save second', 'Second saved'); }, {label:'Second section (appears later)', height:210, delay:5000});
+    view.append(head('Second frame appears later', 'One vfFrameId_ frame is visible at first. About five seconds later a second one appears, so the match becomes ambiguous during the run.'), a.box, b.box);
+  };
+
+  routes['hidden-only'] = function(){
+    var p = framePanel('vfFrameId_', function(){ return miniDoc('Collapsed section', 'Remark', 'j_id0:j_id23:collapsedBlock:j_id10', 'Save remark', 'Remark saved'); }, {label:'Collapsed section', height:210, hidden:true});
+    var btn = el('button', {class:'btn primary', type:'button', id:'show-frame'}, 'Show section');
+    btn.addEventListener('click', function(){ p.setVisible(true); });
+    view.append(head('Only a hidden frame', 'The only vfFrameId_ frame is hidden until you press Show section.'), el('div', {class:'bar'}, btn), p.box);
+  };
+
+  routes['nested-frames'] = function(){
+    var p = framePanel('vfFrameId_', nestedDoc, {label:'Outer frame', height:430});
+    view.append(head('Nested frames', 'An outer vfFrameId_ frame holds an inner vfFrameId_ frame.'), p.box);
+  };
+
+  /* ---------- router ---------- */
+  function render(){
+    var key = (location.hash || '#home').slice(1);
+    var route = routes[key] || routes.home;
+    var tab = key.indexOf('account') === 0 ? 'accounts' : key.indexOf('contact') === 0 ? 'contacts' : (key === 'accounts' || key === 'contacts') ? key : 'home';
+    document.querySelectorAll('nav.tabs a').forEach(function(a){
+      if(a.dataset.tab === tab){ a.setAttribute('aria-current', 'page'); } else { a.removeAttribute('aria-current'); }
+    });
+    view.replaceChildren();
+    panels = [];
+    route();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', render);
+  render();
+})();
+</script>
+</body>
+</html>
